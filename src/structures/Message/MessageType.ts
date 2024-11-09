@@ -1,10 +1,9 @@
 enum MessageTypes {
-    USER_JOIN,
-    USER_LEAVE,
-    CONNECT,
     PING,
     PONG,
-    HANDSHAKE
+    HANDSHAKE,
+    GET_AUDIO,
+    GET_SEEK
 };
 
 export default MessageTypes
