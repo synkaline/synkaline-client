@@ -22,6 +22,7 @@ export default function Radiov2() {
 
         };
 
+
         const handleAudioData = (ev: any) => {
             if (!isCustomEvent(ev)) return;
             setLoadedAudio(false)
@@ -41,9 +42,10 @@ export default function Radiov2() {
 
         const handleSeekData = (ev: any) => {
             if (!isCustomEvent(ev)) return;
-
+            console.log('latency', wsm.getPing())
             let data = ev.detail;
             let seek = data[0].seek;
+            seek = Math.max(seek, 0);
 
             let st = Date.now();
             audioRef.current!.currentTime = seek / 1000;
@@ -55,7 +57,7 @@ export default function Radiov2() {
                     requestSeek()
                 } else {
                     console.log("Audio is seekable, playing now", audioRef.current!.paused)
-                    if (audioRef.current?.paused) 
+                    if (audioRef.current?.paused)
                         audioRef.current.play();
                 }
             }, { once: true });
@@ -64,11 +66,15 @@ export default function Radiov2() {
         wsm.addEventListener('wsopen', handleWsOpen);
         wsm.addEventListener(Message.types[Message.types.GET_AUDIO], handleAudioData);
         wsm.addEventListener(Message.types[Message.types.GET_SEEK], handleSeekData);
+        wsm.addEventListener(Message.types[Message.types.NEW_TRACK], handleAudioData);
+
 
         return () => {
             wsm.removeEventListener('wsopen', handleWsOpen);
             wsm.removeEventListener(Message.types[Message.types.GET_AUDIO], handleAudioData);
             wsm.removeEventListener(Message.types[Message.types.GET_SEEK], handleSeekData);
+            wsm.removeEventListener(Message.types[Message.types.NEW_TRACK], handleAudioData);
+
         };
     }, [wsm]);
 

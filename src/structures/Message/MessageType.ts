@@ -3,7 +3,8 @@ enum MessageTypes {
     PONG,
     HANDSHAKE,
     GET_AUDIO,
-    GET_SEEK
+    GET_SEEK,
+    NEW_TRACK
 };
 
 export default MessageTypes
