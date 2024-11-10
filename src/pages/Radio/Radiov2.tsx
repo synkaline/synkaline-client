@@ -2,20 +2,41 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { WebSocketContext } from '@/contexts/websocket.context'; // assuming this is your WebSocket context
 import { Message } from '@/structures/Message';
 import { isCustomEvent } from '@/utils/isCustonEvent';
+import { AnimationFrame, Visualizer } from '@/structures/Visualizer';
 
 export default function Radiov2() {
     const [loadingAudio, setLoadingAudio] = useState(false);
     const [playing, setPlaying] = useState(false);
     const [loadedAudio, setLoadedAudio] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const wsm = useContext(WebSocketContext);
     const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
     // Connect to WebSocket only once on mount
     useEffect(() => {
-        if (!wsm || !audioRef.current) return;
+        if (!wsm || !audioRef.current || !canvasRef.current) return;
 
         wsm.connect()
+
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+
+        // let wave = new Wave(audioRef.current!, canvasRef.current!);
+
+        // // Simple example: add an animation
+        // wave.addAnimation(new wave.animations.Lines({
+        //     lineWidth: 3,
+        //     lineColor: 'red'
+        // }));
+        const visualizer = new Visualizer(audioRef.current, canvasRef.current);
+        visualizer.connect()
+        const frame = new AnimationFrame(60, visualizer.render.bind(visualizer))
+
+        frame.start()
+    
+
+
 
         // on ws load, get audio data
         const handleWsOpen = () => {
@@ -79,6 +100,7 @@ export default function Radiov2() {
                     // seek is negative when user loads data faster than load delay
                     // in such case set a timeout and start by syncing with server playback
                     if (seek < 0) {
+                        audioRef.current!.paused && audioRef.current!.pause()
                         const wait = Math.abs(seek);
                         console.log(`seek is below 0, waiting for ${wait}ms`)
                         audioRef.current!.pause()
@@ -135,16 +157,12 @@ export default function Radiov2() {
     }
 
     return (
-        <>  
-            <canvas style={{
-                position: 'absolute',
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'red'
+        <>
+            <canvas ref={canvasRef} style={{
+                position: 'absolute'
             }}></canvas>
-            <div>radiov2</div>
-            <audio ref={audioRef} preload='auto' controls />
-            <button onClick={onClick} disabled={false}>{playing ? 'Click to Pause' : 'Click to listen'}</button>
+            <audio hidden crossOrigin='anonymous' ref={audioRef} preload='auto' controls />
+            <button style={{ position: 'fixed' }} onClick={onClick} disabled={false}>{playing ? 'Click to Pause' : 'Click to listen'}</button>
 
         </>
     );

@@ -3,13 +3,13 @@ class AnimationFrame {
     requestId: number;
     fps: number;
     callback: (delta: number) => any | Promise<any>;
-    fn: (() => any | Promise<any>)[]
 
-    constructor(fps = 60, callback: (delta: number) => any | Promise<any>, fn?: (() => any | Promise<any>)[]) {
+
+    constructor(fps = 60, callback: (delta: number) => any | Promise<any>) {
         this.requestId = 0;
         this.fps = fps;
         this.callback = callback;
-        this.fn = fn ?? [];
+
     }
 
     start() {
@@ -24,12 +24,10 @@ class AnimationFrame {
             const delta = now - then;
 
             if (delta >= interval - tolerance) {
-                this.fn[1]();
                 then = now - (delta % interval);
                 this.callback(delta);
             }
 
-            this.fn[0]();
         };
         this.requestId = requestAnimationFrame(animateLoop);
         // window.frameId = this.requestId;
