@@ -53,9 +53,11 @@ export default function Radiov2() {
                 clearTimeout(timeoutId)
                 setTimeoutId(null)
             }
-            console.log('latency', wsm.getPing())
+            console.log(`latency ${wsm.getPing()}s`)
             let data = ev.detail;
             let seek = data[0].seek;
+
+            seek += wsm.getPing()
 
 
             // used to see how long it takes for the seeked section to be playable
@@ -133,7 +135,13 @@ export default function Radiov2() {
     }
 
     return (
-        <>
+        <>  
+            <canvas style={{
+                position: 'absolute',
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: 'red'
+            }}></canvas>
             <div>radiov2</div>
             <audio ref={audioRef} preload='auto' controls />
             <button onClick={onClick} disabled={false}>{playing ? 'Click to Pause' : 'Click to listen'}</button>
